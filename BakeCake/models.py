@@ -20,6 +20,13 @@ class OrderedCake(models.Model):
 
 
 class Order(models.Model):
+    STATUS_CHOICES = [
+        ("accepted", "Заказ принят"),
+        ("in_delivery", "В доставке"),
+        ("completed", "Завершен"),
+        ("cancelled", "Отменен"),
+    ]
+
     client = models.ForeignKey(
         'Client',
         verbose_name='клиент',
@@ -39,6 +46,9 @@ class Order(models.Model):
     )
     order_price = models.DecimalField(max_digits=19, verbose_name='Сумма заказа', decimal_places=2)
     order_time = models.DateTimeField(verbose_name='время создания', auto_now_add=True)
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default="accepted", verbose_name="Статус"
+    )
 
     def __str__(self):
         return f'{str(self.order_time)}'
