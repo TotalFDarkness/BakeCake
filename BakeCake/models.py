@@ -50,6 +50,11 @@ class Order(models.Model):
         max_length=20, choices=STATUS_CHOICES, default="accepted", verbose_name="Статус"
     )
 
+    class Meta:
+        ordering = ('order_time',)
+        verbose_name = 'Заказ'
+        verbose_name_plural = 'Заказы'
+
     def __str__(self):
         return f'{str(self.order_time)}'
 
@@ -62,6 +67,11 @@ class Client(models.Model):
         help_text='ул. Подольских курсантов д.5 кв.4'
     )
 
+    class Meta:
+        ordering = ('id',)
+        verbose_name = 'Клиент'
+        verbose_name_plural = 'Клиенты'
+    
     def __str__(self):
         return self.fio
 
@@ -113,6 +123,10 @@ class Cake(models.Model):
         related_name='cakes',
     )
 
+    class Meta:
+        verbose_name = 'Торт'
+        verbose_name_plural = 'Торты'
+
     def __str__(self):
         return self.title
 
@@ -139,6 +153,11 @@ class Layer(models.Model):
         decimal_places=2,
     )
 
+    class Meta:
+        ordering = ('quantity',)
+        verbose_name = 'Количество уровней'
+        verbose_name_plural = 'Количество уровней'
+
     def __str__(self):
         return f'{str(self.quantity)}'
 
@@ -150,6 +169,11 @@ class Shape(models.Model):
         verbose_name='Цена',
         decimal_places=2
     )
+
+    class Meta:
+        ordering = ('id',)
+        verbose_name = 'Форма'
+        verbose_name_plural = 'Формы'
 
     def __str__(self):
         return self.shape
@@ -163,6 +187,11 @@ class Topping(models.Model):
         decimal_places=2
     )
 
+    class Meta:
+        ordering = ('id',)
+        verbose_name = 'Топпинг'
+        verbose_name_plural = 'Топпинг'
+
     def __str__(self):
         return self.title
 
@@ -174,6 +203,11 @@ class Berry(models.Model):
         verbose_name='Цена',
         decimal_places=2
     )
+
+    class Meta:
+        ordering = ('id',)
+        verbose_name = 'Ягоды'
+        verbose_name_plural = 'Ягоды'
 
     def __str__(self):
         return self.title
@@ -187,6 +221,11 @@ class Inscription(models.Model):
         decimal_places=2
     )
 
+    class Meta:
+        ordering = ('id',)
+        verbose_name = 'Надпись'
+        verbose_name_plural = 'Надписи'
+
     def __str__(self):
         return self.title
 
@@ -198,6 +237,11 @@ class Decor(models.Model):
         verbose_name='Цена',
         decimal_places=2
     )
+
+    class Meta:
+        ordering = ('id',)
+        verbose_name = 'Декор'
+        verbose_name_plural = 'Декор'
 
     def __str__(self):
         return self.title

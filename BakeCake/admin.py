@@ -13,9 +13,9 @@ from .models import (
 )
 
 
-@admin.register(OrderedCake)
-class OrderedCakeAdmin(admin.ModelAdmin):
-    list_display = ['order', 'cake', 'quantity']
+class OrderedCakeInline(admin.TabularInline):
+    model = OrderedCake
+    extra = 1
 
 
 @admin.register(Order)
@@ -23,6 +23,7 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ['client', 'order_price', 'status']
     list_filter = ['status']
     list_editable = ['status']
+    inlines = [OrderedCakeInline]
 
 
 @admin.register(Client)
