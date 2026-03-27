@@ -8,7 +8,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     path("", views.index, name="index"),
-    path("lk", views.lk, name="lk"),
+    path("lk/", views.lk, name="lk"),
+    path("api/cake-data/", views.get_cake_data, name="cake-data"),
 ]
 
 if settings.DEBUG:
