@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from BakeCake.models import Client
+import re
 
 
 @api_view(['POST'])
@@ -14,57 +15,85 @@ from BakeCake.models import Client
 def auth_by_email(request):
     """
     Email authentication: if there is an email, we will log in,
-    if not, create a new user and log in.
+    if not, we create a new user and immediately create a Client.
     """
     email = request.data.get('email')
-
+    
     if not email:
         return Response(
-            {'error': 'Email обязателен'},
-            status=status.HTTP_400_BAD_REQUEST,
+            {'error': 'Email обязателен'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(email_regex, email):
+        return Response(
+            {'error': 'Введите корректный email адрес (например, name@domain.com)'}, 
+            status=status.HTTP_400_BAD_REQUEST
         )
     
     email = email.lower().strip()
+    
     user = User.objects.filter(email=email).first()
-
+    
     if user:
         login(request, user)
+        
+        Client.objects.get_or_create(
+            user=user,
+            defaults={
+                'fio': '',
+                'phone': '',
+                'address': '',
+                'email': email,
+            }
+        )
+        
         return Response({
             'message': 'Вход выполнен',
             'user': {
                 'email': user.email,
-                'is_authenticated': True
+                'is_authenticated': True,
             }
         })
     else:
         user = User.objects.create_user(
             username=email,
             email=email,
-            password=None
+            password=None,
         )
+        
+        Client.objects.create(
+            user=user,
+            fio='',
+            phone='',
+            address='',
+            email=email,
+        )
+        
         login(request, user)
-
+        
         return Response({
-            'message': 'Пользователь создан и выполонен вход',
+            'message': 'Пользователь создан и выполнен вход',
             'user': {
                 'email': user.email,
                 'is_authenticated': True,
             }
         }, status=status.HTTP_201_CREATED)
-    
+
+
 @api_view(['POST'])
 def logout_user(request):
-    """Exit from system."""
     logout(request)
     return Response({'message': 'Вы вышли из системы'})
 
+
 @api_view(['GET'])
 def get_profile(request):
-    """Getting the current user's profile."""
     if not request.user.is_authenticated:
         return Response(
-            {'error': 'Не авторизован'},
-            status=status.HTTP_401_UNAUTHORIZED,
+            {'error': 'Не авторизован'}, 
+            status=status.HTTP_401_UNAUTHORIZED
         )
     
     try:
@@ -76,26 +105,33 @@ def get_profile(request):
             'address': client.address or '',
         })
     except Client.DoesNotExist:
+        client = Client.objects.create(
+            user=request.user,
+            fio='',
+            phone='',
+            address='',
+            email=request.user.email,
+        )
         return Response({
-            'email': request.user.email,
             'fio': '',
             'phone': '',
+            'email': request.user.email,
             'address': '',
         })
-    
+
+
 @api_view(['POST'])
 def update_profile(request):
-    """Update profile (fio, phone, address)."""
     if not request.user.is_authenticated:
         return Response(
-            {'error': 'Не авторизован'},
-            status=status.HTTP_401_UNAUTHORIZED,
+            {'error': 'Не авторизован'}, 
+            status=status.HTTP_401_UNAUTHORIZED
         )
     
     fio = request.data.get('fio', '')
     phone = request.data.get('phone', '')
     address = request.data.get('address', '')
-
+    
     client, created = Client.objects.get_or_create(
         user=request.user,
         defaults={
@@ -105,14 +141,14 @@ def update_profile(request):
             'email': request.user.email,
         }
     )
-
+    
     if not created:
         client.fio = fio
         client.phone = phone
         client.address = address
         client.email = request.user.email
         client.save()
-
+    
     return Response({
         'fio': client.fio,
         'phone': client.phone,
@@ -120,9 +156,9 @@ def update_profile(request):
         'address': client.address,
     })
 
+
 @api_view(['GET'])
 def get_orders(request):
-    """Receiving user orders."""
     if not request.user.is_authenticated:
         return Response(
             {'error': 'Не авторизован'}, 
@@ -136,7 +172,7 @@ def get_orders(request):
             'ordered_cakes__cake__toppings',
             'ordered_cakes__cake__berries',
             'ordered_cakes__cake__decor',
-            'ordered_cakes__cake__inscription'
+            'ordered_cakes__cake__inscription',
         ).order_by('-order_time')
         
         orders_data = []
@@ -164,11 +200,10 @@ def get_orders(request):
                 'status': order.get_status_display(),
                 'status_code': order.status,
                 'comment': order.comment,
-                'cakes': cakes
+                'cakes': cakes,
             })
         
         return Response(orders_data)
         
     except Client.DoesNotExist:
         return Response([])
-    

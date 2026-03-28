@@ -8,10 +8,11 @@ Vue.createApp({
         return {
             RegSchema: {
                 reg: (value) => {
-                    if (value && value.includes('@')) {
+                    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                    if (value && emailRegex.test(value)) {
                         return true;
                     }
-                    return 'Введите корректный email';
+                    return 'Введите корректный email (например, name@domain.com)';
                 }
             },
             RegInput: '',
@@ -21,8 +22,9 @@ Vue.createApp({
     },
     methods: {
         async RegSubmit() {
-            if (!this.RegInput || !this.RegInput.includes('@')) {
-                this.error = 'Введите корректный email';
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!this.RegInput || !emailRegex.test(this.RegInput)) {
+                this.error = 'Введите корректный email (например, name@domain.com)';
                 return;
             }
             
